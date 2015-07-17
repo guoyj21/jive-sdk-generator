@@ -1,0 +1,271 @@
+<!--
+  ~ /*
+  ~  * Copyright 2013 Jive Software
+  ~  *
+  ~  *    Licensed under the Apache License, Version 2.0 (the "License");
+  ~  *    you may not use this file except in compliance with the License.
+  ~  *    You may obtain a copy of the License at
+  ~  *
+  ~  *       http://www.apache.org/licenses/LICENSE-2.0
+  ~  *
+  ~  *    Unless required by applicable law or agreed to in writing, software
+  ~  *    distributed under the License is distributed on an "AS IS" BASIS,
+  ~  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~  *    See the License for the specific language governing permissions and
+  ~  *    limitations under the License.
+  ~  */
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>{{groupId}}</groupId>
+    <artifactId>{{artifactId}}</artifactId>
+    <version>{{version}}</version>
+    <name>{{name}}</name>
+    <packaging>war</packaging>
+
+    <parent>
+        <groupId>com.jivesoftware.sdk</groupId>
+        <artifactId>jive-sdk-java-jersey</artifactId>
+        <version>1.0.5.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <properties>
+        <!--
+        ############## SERVICE CONFIGURATION ##########################################################################
+        #### NOTE: YOU CAN SET THESE PROPERTIES VIA THE COMMAND LINE VIA -DclientUrl=yyy -Dport=8080 ...  #############
+        ####                                                                                                      #####
+        #### NOTE: WHEN DEPLOYING TO HEROKU, THESE SETTINGS ARE IGNORED IN FAVOR OF Procfile and Environment VARS #####
+        ###############################################################################################################
+        -->
+        <clientUrl>{{clientUrl}}</clientUrl>
+        <port>{{port}}</port>
+        <appContext>{{appContext}}</appContext>
+
+        <!-- VALID VALUES ARE ANY unsigned AND signed -->
+        <!-- SEE: /src/main/templates/definition.[unsigned|signed].header.template -->
+        <!-- NOTE: MOST ADD-ONS ARE NOT SIGNED, BUT IF YOU THINK YOU NEED ONE, PLEASE SEE SIGNED ADD-ONS ARE ONLY VALID ON A PER INSTANCE BASIS -->
+        <jive.addon.definition.template>unsigned</jive.addon.definition.template>
+
+        <!-- IF YOU WANT TO INCLUDE THE STORAGE EXAMPLE IN YOUR ADD-ON, YOU WILL NEED TO CHANGED TO enabled AND HAVE ADMIN ACCESS TO YOUR JIVE INSTANCE -->
+        <jive.addon.storage.feature>disabled</jive.addon.storage.feature>
+
+        <!-- ONLY APPLICABLE FOR definition.signed.template (see above) -->
+        <!-- FOLLOW INSTRUCTIONS ON HOW TO OBTAIN A SERVICE SIGNATURE -->
+        <!-- SEE: https://community.jivesoftware.com/docs/DOC-110343 -->
+        <jive.addon.serviceSignature>TODO</jive.addon.serviceSignature>
+
+        <!-- ONLY APPLICABLE FOR definition.signed.template (see above) -->
+        <!-- FOLLOW INSTRUCTIONS ON HOW TO CONFIGURE THE RUN-AS STRATEGY CAN BE ONE OF: email, userid, username, uri -->
+        <!-- SEE: https://community.jivesoftware.com/docs/DOC-110343 -->
+        <jive.addon.runAsStrategy>userid</jive.addon.runAsStrategy>
+
+        <!--
+        ############## ADD-ON DEVELOPER PROFILE #######################################################################
+        -->
+        <jive.addon.developer.name>{{developer_name}}</jive.addon.developer.name>
+        <jive.addon.developer.company>{{developer_company}}</jive.addon.developer.company>
+        <jive.addon.developer.email>{{developer_company}}</jive.addon.developer.email>
+
+        <!--
+        ############## ADD-ON COMPANY PROFILE #########################################################################
+        -->
+        <jive.addon.company.website.url>{{company_website_url}}</jive.addon.company.website.url>
+        <jive.addon.company.community.url>{{company_community_url}}</jive.addon.company.community.url>
+        <jive.addon.company.email>{{company_email}}</jive.addon.company.email>
+    </properties>
+
+    <build>
+        <finalName>${jive.addon.build.name}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.1.1</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
+            <plugin>
+              <artifactId>maven-clean-plugin</artifactId>
+              <version>2.5</version>
+              <configuration>
+                <filesets>
+                  <fileset>
+                    <directory>src/main/extension</directory>
+                    <includes>
+                      <include>definition.json</include>
+                      <include>meta.json</include>
+                    </includes>
+                  </fileset>
+                </filesets>
+              </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals><goal>copy-dependencies</goal></goals>
+                    </execution>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>copy</goal></goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.eclipse.jetty</groupId>
+                                    <artifactId>jetty-runner</artifactId>
+                                    <version>${jetty-version}</version>
+                                    <destFileName>jetty-runner.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <dependencies>
+                    <dependency>
+                    	<groupId>org.codehaus.groovy</groupId>
+                    	<artifactId>groovy-all</artifactId>
+                    	<version>2.2.1</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <id>load-configuration</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <!-- CREATES A BUILD TIME FOR THE ADD-ON -->
+                                <tstamp>
+                                     <format property="jive.addon.build.timestamp" pattern="yyyy-MM-dd'T'HH:mm:ss.SSSZ"/>
+                                </tstamp>
+
+                                <!-- LOADS IN PROPERTIES FROM PROPERTIES FILE (IF NEEDED) -->
+				<!--
+                                <loadproperties srcFile="src/main/resources/jiveclientconfiguration.properties"/>
+				-->
+
+                                <!-- IF FILE DOESN'T EXIST, CREATE.  DO NOT RE-COPY (THIS IS HOW WE LOCK IDs) -->
+                                <copy file="src/main/templates/definition.template" tofile="src/main/extension/definition.json" overwrite="false" />
+                                <copy file="src/main/templates/meta.template" tofile="src/main/extension/meta.json" overwrite="false" />
+
+                                <!-- SEEDING jiveclientconfiguration.properties CONFIGURATION VALUES -->
+				<!--
+                                <replace file="src/main/resources/jiveclientconfiguration.properties" token="[[clientUrl]]" value="${clientUrl}"/>
+                                <replace file="src/main/resources/jiveclientconfiguration.properties" token="[[port]]" value="${port}"/>
+                                <replace file="src/main/resources/jiveclientconfiguration.properties" token="[[appContext]]" value="${appContext}"/>
+				-->
+
+                                <!-- SEEDING definition.json CONFIGURATION VALUES -->
+				<!--
+                                <replace file="src/main/extension/definition.json" token="[[serviceURL]]" value="${clientUrl}:${port}"/>
+                                <replace file="src/main/extension/definition.json" token="[[serviceContext]]" value="${appContext}"/>
+                                <replace file="src/main/extension/definition.json" token="[[jive.addon.build.timestamp]]" value="${jive.addon.build.timestamp}"/>
+                                <replace file="src/main/extension/definition.json" token="[[jive.random.seed]]" value="${jive.random.seed}"/>
+                                <replace file="src/main/extension/definition.json" token="[[jive.addon.serviceSignature]]" value="${jive.addon.serviceSignature}"/>
+                                <replace file="src/main/extension/definition.json" token="[[jive.addon.runAsStrategy]]" value="${jive.addon.runAsStrategy}"/>
+				-->
+
+                                <!-- SEEDING meta.json CONFIGURATION VALUES -->
+				<!--
+                                <replace file="src/main/extension/meta.json" token="[[serviceURL]]" value="${clientUrl}:${port}"/>
+                                <replace file="src/main/extension/meta.json" token="[[serviceContext]]" value="${appContext}"/>
+                                <replace file="src/main/extension/meta.json" token="[[UUID1]]" value="${jive.random.UUID1}"/>
+                                <replace file="src/main/extension/meta.json" token="[[jive.addon.build.timestamp]]" value="${jive.addon.build.timestamp}"/>
+				-->
+
+                                <!--- CREATE CARTRIDGE ZIP FILES -->
+                                <zip destfile="src/main/extension/data/${project.build.finalName}-cartridge.zip" basedir="src/main/cartridge" update="true" whenempty="skip" />
+                                <zip destfile="./src/main/webapp/extension.zip" basedir="src/main/extension" update="true" />
+
+                            </target>
+
+                            <!-- NEEDED IN THE EVENT A PROPERTY IS USED ELSE-WHERE IN THE POM -->
+                            <exportAntProperties>true</exportAntProperties>
+
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty-version}</version>
+                <configuration>
+                    <stopKey></stopKey>
+                    <stopPort></stopPort>
+                    <scanIntervalSeconds>10</scanIntervalSeconds>
+                    <webAppSourceDirectory>src/main/webapp</webAppSourceDirectory>
+                    <webAppConfig>
+                        <!-- <overrideDescriptor>src/main/webapp/WEB-INF/web.xml</overrideDescriptor> -->
+                        <!-- <jettyEnvXml>src/main/webapp/WEB-INF/jetty-env.xml</jettyEnvXml> -->
+                        <contextPath>/</contextPath>
+                    </webAppConfig>
+                    <!-- <contextXml>src/main/webapp/WEB-INF/jetty-context.xml</contextXml> -->
+                    <httpConnector>
+                        <name>${clientUrl}</name>
+                        <port>${port}</port>
+                        <idleTimeout>60000</idleTimeout>
+                    </httpConnector>
+                </configuration>
+            </plugin>
+            <plugin>
+   	          <groupId>org.apache.tomcat.maven</groupId>
+   	          <artifactId>tomcat7-maven-plugin</artifactId>
+   	          <version>2.2</version>
+              <configuration>
+                  <url>http://${clientUrl}:${port}</url>
+                  <path>/</path>
+                  <port>${port}</port>
+              </configuration>
+              <dependencies>
+                  <!-- SEE : http://www.murraywilliams.com/2011/11/running-jstl-1-2-on-tomcat-7-using-maven/ -->
+                  <dependency>
+                    <groupId>org.glassfish.web</groupId>
+                    <artifactId>jstl-impl</artifactId>
+                    <version>1.2</version>
+                    <exclusions>
+                      <exclusion>
+                        <artifactId>servlet-api</artifactId>
+                        <groupId>javax.servlet</groupId>
+                      </exclusion>
+                      <exclusion>
+                        <artifactId>jsp-api</artifactId>
+                        <groupId>javax.servlet.jsp</groupId>
+                      </exclusion>
+                    </exclusions>
+                  </dependency>
+              </dependencies>
+   	        </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>com.jivesoftware.sdk</groupId>
+            <artifactId>jive-sdk-java-jersey-api</artifactId>
+            <version>1.0.5.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.jivesoftware.sdk</groupId>
+            <artifactId>jive-sdk-java-jersey</artifactId>
+            <version>1.0.5.0-SNAPSHOT</version>
+            <type>pom</type>
+        </dependency>
+
+    </dependencies>
+</project>

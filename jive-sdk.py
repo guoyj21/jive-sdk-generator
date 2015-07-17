@@ -1,0 +1,3 @@
+import sdk
+
+sdk.init()
