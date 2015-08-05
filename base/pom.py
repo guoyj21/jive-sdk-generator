@@ -6,7 +6,7 @@ class Pom(TemplateSpec):
 	self.artifactId = data["artifactId"]
 	self.version = data["version"]
 	self.name = data["name"]
-	self.clientUrl = data["clientUrl"]
+	self.clienturl = data["clienturl"]
 	self.port = data["port"]
 	self.appContext = data["appContext"]
 
@@ -22,7 +22,7 @@ class Pom(TemplateSpec):
     def name(self):
 	return self.name
 
-    def clientUrl(self):
+    def clienturl(self):
         return self.clienturl
 
     def port(self):

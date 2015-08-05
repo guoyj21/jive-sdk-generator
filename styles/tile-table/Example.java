@@ -16,7 +16,7 @@
  *
  */
 
-package {{package}};
+package {{package}}.tile;
 
 import com.jivesoftware.sdk.api.entity.TileInstance;
 import com.jivesoftware.sdk.api.tile.JiveTableTile;
