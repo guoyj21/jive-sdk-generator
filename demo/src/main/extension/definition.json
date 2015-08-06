@@ -28,5 +28,12 @@
       "description": "MyTestTableTile"
     }
   ],
-  "osapps": []
+  "osapps": [
+    {
+      "url": "%serviceURL%/apps/simpleapp/app.xml",
+      "appPath": "875dfb8ef210431e9685eae7a96fefa5",
+      "name": "simpleapp",
+      "id": "875dfb8e-f210-431e-9685-eae7a96fefa5"
+    }
+  ]
 }

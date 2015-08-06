@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Module specificationVersion="1">
-  <ModulePrefs title="{{{TILE_PREFIX}}}simpleapp"
-               description="Description of {{{TILE_PREFIX}}}simpleapp"
+  <ModulePrefs title="simpleapp"
+               description="Description of simpleapp"
                author="Aron Racho"
                author_affiliation="Jive"
                author_email="aron.racho@jivesoftware.com">
@@ -20,7 +20,7 @@
 			<![CDATA[
 				<action id="com.jivesoftware.places"
 						path="jive/actions/places/*"
-						label="Place action ({{{TILE_PREFIX}}}simpleapp)"
+						label="Place action (simpleapp)"
 						view="canvas"
 				/>
 				<action id="com.jivesoftware.profile.rtc" 

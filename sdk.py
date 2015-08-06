@@ -3,6 +3,7 @@ import sys
 import os
 import errno
 import shutil
+import uuid
 import simplejson
 
 from base.pom import Pom
@@ -57,8 +58,7 @@ class Generator(object):
                      self.appContext)
 
         elif style.startswith("app"):
-            app_name = raw_input("please input app name")
-            add_app()
+            add_app(tile_name, "%serviceURL%/apps/" + tile_name + "/app.xml")
 
 def copy_pom(cwd, data):
     print "> Generate pom.xml"
@@ -151,8 +151,20 @@ def copy_default_service(package):
     with open(path + "HealthService.java", "a+") as f:
         f.write(healthService)
 
-def add_app(app_name, title="app demo", description="demo app", author=""):
-    pass
+def add_app(app_name, url):
+    app = {}
+    id = uuid.uuid4()
+    app["name"] = app_name
+    app["id"] = str(id)
+    app["appPath"] = str(id).replace("-", "")
+    app["url"] = url
+
+    definition = load_definition()
+    definition["osapps"].append(app)
+    update_definition(definition)
+    src = os.path.dirname(__file__) + "/styles/app"
+    dest = os.getcwd() + "/src/main/webapp/apps/" + app_name
+    copy_dir(src, dest)
 
 def add_tile(style, class_name, tile_name, package, service_url, app_context):
     print "Add tile"
@@ -203,7 +215,6 @@ def add_tile(style, class_name, tile_name, package, service_url, app_context):
 
     # Add tile front side files
     tile_front_path = os.getcwd() + "/src/main/webapp/tiles/" + tile_name
-    #os.makedirs(tile_front_path)
     copy_dir(style_path + "/public/", tile_front_path)
 
 
